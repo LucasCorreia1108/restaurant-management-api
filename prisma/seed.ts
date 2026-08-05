@@ -102,6 +102,15 @@ async function main() {
     });
   }
 
+  let desserts = await prisma.category.findFirst({
+    where: { name: 'Sobremesas' },
+  });
+  if (!desserts) {
+    desserts = await prisma.category.create({
+      data: { name: 'Sobremesas', type: CategoryType.DESSERT },
+    });
+  }
+
   const menuCount = await prisma.menuItem.count();
   if (menuCount === 0) {
     await prisma.menuItem.createMany({
@@ -148,8 +157,46 @@ async function main() {
           preparationTime: 2,
           categoryId: drinks.id,
         },
+        {
+          name: 'Petit Gateau',
+          description: 'Bolo quente de chocolate com sorvete',
+          price: 34.9,
+          preparationTime: 15,
+          categoryId: desserts.id,
+        },
+        {
+          name: 'Pudim de Leite',
+          description: 'Pudim caseiro com calda de caramelo',
+          price: 18.0,
+          preparationTime: 5,
+          categoryId: desserts.id,
+        },
       ],
     });
+  } else {
+    const dessertCount = await prisma.menuItem.count({
+      where: { categoryId: desserts.id },
+    });
+    if (dessertCount === 0) {
+      await prisma.menuItem.createMany({
+        data: [
+          {
+            name: 'Petit Gateau',
+            description: 'Bolo quente de chocolate com sorvete',
+            price: 34.9,
+            preparationTime: 15,
+            categoryId: desserts.id,
+          },
+          {
+            name: 'Pudim de Leite',
+            description: 'Pudim caseiro com calda de caramelo',
+            price: 18.0,
+            preparationTime: 5,
+            categoryId: desserts.id,
+          },
+        ],
+      });
+    }
   }
 
   console.log('✅ Seed completed');

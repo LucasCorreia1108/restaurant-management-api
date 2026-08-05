@@ -27,6 +27,7 @@ enum CategoryType {
   STARTER
   MAIN_COURSE
   DRINK
+  DESSERT
 }
 
 enum OrderStatus {
@@ -96,6 +97,7 @@ model MenuItem {
   price           Decimal  @db.Decimal(10, 2)
   preparationTime Int
   available       Boolean  @default(true)
+  imageUrl        String?
   categoryId      String
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
