@@ -50,6 +50,10 @@ export class UsersService {
     return user;
   }
 
+  async register(dto: CreateUserDto) {
+    return this.create(dto);
+  }
+
   async findAll(role?: Role) {
     return this.prisma.user.findMany({
       where: role ? { role } : undefined,

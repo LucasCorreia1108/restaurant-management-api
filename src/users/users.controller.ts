@@ -17,7 +17,7 @@ import {
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
-import { Roles } from '../common/decorators';
+import { Roles, Public } from '../common/decorators';
 import { Role } from '../common/enums';
 
 @ApiTags('Users')
@@ -25,6 +25,13 @@ import { Role } from '../common/enums';
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  @Public()
+  @Post('register')
+  @ApiOperation({ summary: 'Register a new user (Public)' })
+  register(@Body() dto: CreateUserDto) {
+    return this.usersService.register(dto);
+  }
 
   @Post()
   @Roles(Role.ADMIN)
