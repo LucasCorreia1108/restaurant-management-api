@@ -4,13 +4,21 @@ import {
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateMenuItemDto, UpdateMenuItemDto } from './dto/menu-item.dto';
+import { CloudinaryService } from '../uploads/cloudinary/cloudinary.service';
+import {
+  CreateMenuItemDto,
+  UpdateMenuItemDto,
+  UpdateMenuItemImageDto,
+} from './dto/menu-item.dto';
 
 @Injectable()
 export class MenuService {
   private readonly logger = new Logger(MenuService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cloudinary: CloudinaryService,
+  ) {}
 
   async create(dto: CreateMenuItemDto) {
     const category = await this.prisma.category.findUnique({
@@ -28,6 +36,7 @@ export class MenuService {
         price: dto.price,
         preparationTime: dto.preparationTime,
         available: dto.available ?? true,
+        imageUrl: dto.imageUrl,
         categoryId: dto.categoryId,
       },
       include: { category: true },
@@ -54,7 +63,7 @@ export class MenuService {
   }
 
   async update(id: string, dto: UpdateMenuItemDto) {
-    await this.findOne(id);
+    const current = await this.findOne(id);
 
     if (dto.categoryId) {
       const category = await this.prisma.category.findUnique({
@@ -65,6 +74,10 @@ export class MenuService {
       }
     }
 
+    if (dto.imageUrl && current.imageUrl && dto.imageUrl !== current.imageUrl) {
+      await this.safeDeleteCloudinaryImage(current.imageUrl);
+    }
+
     return this.prisma.menuItem.update({
       where: { id },
       data: dto,
@@ -72,9 +85,41 @@ export class MenuService {
     });
   }
 
+  async updateImage(id: string, dto: UpdateMenuItemImageDto) {
+    const current = await this.findOne(id);
+
+    if (current.imageUrl && current.imageUrl !== dto.imageUrl) {
+      await this.safeDeleteCloudinaryImage(current.imageUrl);
+    }
+
+    const updated = await this.prisma.menuItem.update({
+      where: { id },
+      data: { imageUrl: dto.imageUrl },
+      include: { category: true },
+    });
+
+    this.logger.log(`Updated image for menu item ${id}`);
+    return updated;
+  }
+
   async remove(id: string) {
-    await this.findOne(id);
+    const item = await this.findOne(id);
+    if (item.imageUrl) {
+      await this.safeDeleteCloudinaryImage(item.imageUrl);
+    }
     await this.prisma.menuItem.delete({ where: { id } });
     return { message: `Menu item ${id} deleted successfully` };
+  }
+
+  private async safeDeleteCloudinaryImage(imageUrl: string) {
+    const publicId = this.cloudinary.extractPublicId(imageUrl);
+    if (!publicId) return;
+    try {
+      await this.cloudinary.deleteImage(publicId);
+    } catch (error) {
+      this.logger.warn(
+        `Failed to delete Cloudinary image ${publicId}: ${String(error)}`,
+      );
+    }
   }
 }

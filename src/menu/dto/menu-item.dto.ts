@@ -6,8 +6,10 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUrl,
   IsUUID,
   Min,
+  ValidateIf,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -37,6 +39,13 @@ export class CreateMenuItemDto {
   @IsOptional()
   @IsBoolean()
   available?: boolean;
+
+  @ApiPropertyOptional({
+    example: 'https://res.cloudinary.com/demo/image/upload/v1/restaurant/menu-items/file.jpg',
+  })
+  @IsOptional()
+  @IsUrl()
+  imageUrl?: string;
 
   @ApiProperty()
   @IsUUID()
@@ -77,4 +86,22 @@ export class UpdateMenuItemDto {
   @IsOptional()
   @IsUUID()
   categoryId?: string;
+
+  @ApiPropertyOptional({
+    example: 'https://res.cloudinary.com/demo/image/upload/v1/restaurant/menu-items/file.jpg',
+    nullable: true,
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null && value !== '')
+  @IsUrl()
+  imageUrl?: string | null;
+}
+
+export class UpdateMenuItemImageDto {
+  @ApiProperty({
+    example: 'https://res.cloudinary.com/demo/image/upload/v1/restaurant/menu-items/file.jpg',
+  })
+  @IsUrl()
+  @IsNotEmpty()
+  imageUrl: string;
 }

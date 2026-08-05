@@ -42,6 +42,7 @@ async function bootstrap() {
     .addTag('Kitchen')
     .addTag('Payments')
     .addTag('Reports')
+    .addTag('Uploads')
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);

@@ -17,7 +17,11 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { MenuService } from './menu.service';
-import { CreateMenuItemDto, UpdateMenuItemDto } from './dto/menu-item.dto';
+import {
+  CreateMenuItemDto,
+  UpdateMenuItemDto,
+  UpdateMenuItemImageDto,
+} from './dto/menu-item.dto';
 import { Roles } from '../common/decorators';
 import { Role } from '../common/enums';
 
@@ -50,6 +54,16 @@ export class MenuController {
   @ApiOperation({ summary: 'Get menu item by ID' })
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.menuService.findOne(id);
+  }
+
+  @Patch(':id/image')
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Update menu item image URL (Admin)' })
+  updateImage(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateMenuItemImageDto,
+  ) {
+    return this.menuService.updateImage(id, dto);
   }
 
   @Patch(':id')
