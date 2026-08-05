@@ -188,6 +188,28 @@ export class OrdersService {
       notes ?? 'Delivered to table',
     );
 
+    const pendingKitchen = await this.prisma.order.count({
+      where: {
+        tableId: order.tableId,
+        status: {
+          in: [
+            OrderStatus.CREATED,
+            OrderStatus.SENT_TO_KITCHEN,
+            OrderStatus.PREPARING,
+            OrderStatus.READY,
+          ],
+        },
+      },
+    });
+
+    if (pendingKitchen === 0) {
+      await this.tablesService.setStatus(order.tableId, TableStatus.OCCUPIED);
+    } else {
+      this.ws.emitTableUpdated(
+        await this.tablesService.findOne(order.tableId),
+      );
+    }
+
     this.ws.emitOrderDelivered(updated);
     return updated;
   }

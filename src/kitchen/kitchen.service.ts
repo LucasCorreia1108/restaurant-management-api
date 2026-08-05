@@ -4,9 +4,11 @@ import {
   Logger,
 } from '@nestjs/common';
 import { OrdersService } from '../orders/orders.service';
+import { TablesService } from '../tables/tables.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { WebsocketGateway } from '../websocket/websocket.gateway';
 import { AuthUser } from '../common/decorators';
-import { OrderStatus } from '../common/enums';
+import { OrderStatus, TableStatus } from '../common/enums';
 
 @Injectable()
 export class KitchenService {
@@ -14,6 +16,8 @@ export class KitchenService {
 
   constructor(
     private readonly ordersService: OrdersService,
+    private readonly tablesService: TablesService,
+    private readonly prisma: PrismaService,
     private readonly ws: WebsocketGateway,
   ) {}
 
@@ -75,6 +79,23 @@ export class KitchenService {
       user.id,
       notes ?? 'Order ready for delivery',
     );
+
+    const stillCooking = await this.prisma.order.count({
+      where: {
+        tableId: order.tableId,
+        status: {
+          in: [OrderStatus.SENT_TO_KITCHEN, OrderStatus.PREPARING],
+        },
+      },
+    });
+
+    if (stillCooking === 0) {
+      await this.tablesService.setStatus(order.tableId, TableStatus.OCCUPIED);
+    } else {
+      this.ws.emitTableUpdated(
+        await this.tablesService.findOne(order.tableId),
+      );
+    }
 
     this.logger.log(`Order ${orderId} is ready`);
     this.ws.emitOrderReady(updated);

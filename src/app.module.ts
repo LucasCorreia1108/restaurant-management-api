@@ -13,6 +13,7 @@ import { KitchenModule } from './kitchen/kitchen.module';
 import { PaymentsModule } from './payments/payments.module';
 import { ReportsModule } from './reports/reports.module';
 import { WebsocketModule } from './websocket/websocket.module';
+import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { WebsocketModule } from './websocket/websocket.module';
     KitchenModule,
     PaymentsModule,
     ReportsModule,
+    UploadsModule,
   ],
 })
 export class AppModule {}
