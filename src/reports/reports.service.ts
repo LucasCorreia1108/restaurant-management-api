@@ -158,8 +158,8 @@ export class ReportsService {
   private buildDateFilter(from?: string, to?: string) {
     if (!from && !to) return undefined;
     return {
-      ...(from ? { gte: new Date(from) } : {}),
-      ...(to ? { lte: new Date(to) } : {}),
+      ...(from ? { gte: new Date(`${from}T00:00:00.000`) } : {}),
+      ...(to ? { lte: new Date(`${to}T23:59:59.999`) } : {}),
     };
   }
 }
