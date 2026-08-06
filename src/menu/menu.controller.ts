@@ -39,7 +39,7 @@ export class MenuController {
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.WAITER, Role.KITCHEN, Role.CASHIER)
+  @Roles(Role.ADMIN, Role.MANAGER, Role.WAITER, Role.KITCHEN, Role.CASHIER)
   @ApiOperation({ summary: 'List menu items' })
   @ApiQuery({ name: 'availableOnly', required: false, type: Boolean })
   findAll(

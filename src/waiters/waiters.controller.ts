@@ -16,7 +16,7 @@ export class WaitersController {
   ) {}
 
   @Get()
-  @Roles(Role.ADMIN, Role.CASHIER)
+  @Roles(Role.ADMIN, Role.MANAGER, Role.CASHIER)
   @ApiOperation({ summary: 'List all waiters' })
   findAll() {
     return this.usersService.findAll(Role.WAITER);

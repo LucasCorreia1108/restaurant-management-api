@@ -28,7 +28,7 @@ export class CategoriesController {
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.WAITER, Role.KITCHEN, Role.CASHIER)
+  @Roles(Role.ADMIN, Role.MANAGER, Role.WAITER, Role.KITCHEN, Role.CASHIER)
   @ApiOperation({ summary: 'List categories' })
   findAll() {
     return this.categoriesService.findAll();

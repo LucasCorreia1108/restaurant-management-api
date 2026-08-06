@@ -20,7 +20,7 @@ export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
   @Get('table/:tableId/bill')
-  @Roles(Role.CASHIER, Role.ADMIN, Role.WAITER)
+  @Roles(Role.CASHIER, Role.ADMIN, Role.MANAGER, Role.WAITER)
   @ApiOperation({
     summary: 'Get table bill with waiter info (Cashier view)',
   })
@@ -29,7 +29,7 @@ export class PaymentsController {
   }
 
   @Post('order')
-  @Roles(Role.CASHIER, Role.ADMIN)
+  @Roles(Role.CASHIER, Role.ADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'Register payment for a single order (RN008)' })
   payOrder(@Body() dto: CreatePaymentDto, @CurrentUser() user: AuthUser) {
     return this.paymentsService.payOrder(dto, user);

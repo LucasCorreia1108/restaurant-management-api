@@ -34,14 +34,14 @@ export class TablesController {
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.WAITER, Role.CASHIER, Role.KITCHEN)
+  @Roles(Role.ADMIN, Role.MANAGER, Role.WAITER, Role.CASHIER, Role.KITCHEN)
   @ApiOperation({ summary: 'List all tables' })
   findAll() {
     return this.tablesService.findAll();
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.WAITER, Role.CASHIER)
+  @Roles(Role.ADMIN, Role.MANAGER, Role.WAITER, Role.CASHIER)
   @ApiOperation({ summary: 'Get table details with open orders' })
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.tablesService.findOne(id);
@@ -65,7 +65,7 @@ export class TablesController {
   }
 
   @Post(':id/open')
-  @Roles(Role.WAITER, Role.ADMIN)
+  @Roles(Role.WAITER, Role.ADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'Open table and assign waiter (RN001)' })
   open(
     @Param('id', ParseUUIDPipe) id: string,
@@ -82,7 +82,7 @@ export class TablesController {
   }
 
   @Post(':id/request-bill')
-  @Roles(Role.WAITER, Role.ADMIN)
+  @Roles(Role.WAITER, Role.ADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'Request bill closure for a table' })
   requestBill(@Param('id', ParseUUIDPipe) id: string) {
     return this.tablesService.requestBill(id);

@@ -26,7 +26,7 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
-  @Roles(Role.WAITER, Role.ADMIN)
+  @Roles(Role.WAITER, Role.ADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'Create order for a table (RN002/RN003)' })
   create(@Body() dto: CreateOrderDto, @CurrentUser() user: AuthUser) {
     return this.ordersService.create(dto, user);
@@ -41,7 +41,7 @@ export class OrdersController {
   }
 
   @Get('table/:tableId')
-  @Roles(Role.ADMIN, Role.WAITER, Role.CASHIER)
+  @Roles(Role.ADMIN, Role.MANAGER, Role.WAITER, Role.CASHIER)
   @ApiOperation({ summary: 'List orders for a table' })
   findByTable(@Param('tableId', ParseUUIDPipe) tableId: string) {
     return this.ordersService.findByTable(tableId);
@@ -55,7 +55,7 @@ export class OrdersController {
   }
 
   @Post(':id/send-to-kitchen')
-  @Roles(Role.WAITER, Role.ADMIN)
+  @Roles(Role.WAITER, Role.ADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'Send order to kitchen' })
   sendToKitchen(
     @Param('id', ParseUUIDPipe) id: string,
@@ -66,7 +66,7 @@ export class OrdersController {
   }
 
   @Post(':id/deliver')
-  @Roles(Role.WAITER, Role.ADMIN)
+  @Roles(Role.WAITER, Role.ADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'Mark order as delivered' })
   deliver(
     @Param('id', ParseUUIDPipe) id: string,

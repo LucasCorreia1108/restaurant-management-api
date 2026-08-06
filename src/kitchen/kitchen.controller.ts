@@ -20,7 +20,7 @@ export class KitchenController {
   constructor(private readonly kitchenService: KitchenService) {}
 
   @Get('queue')
-  @Roles(Role.KITCHEN, Role.ADMIN)
+  @Roles(Role.KITCHEN, Role.ADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'Get kitchen order queue' })
   getQueue() {
     return this.kitchenService.getQueue();

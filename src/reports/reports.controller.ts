@@ -12,7 +12,7 @@ import { Role } from '../common/enums';
 @ApiTags('Reports')
 @ApiBearerAuth()
 @Controller('reports')
-@Roles(Role.ADMIN)
+@Roles(Role.ADMIN, Role.MANAGER)
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
 
