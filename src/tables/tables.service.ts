@@ -8,11 +8,19 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { WebsocketGateway } from '../websocket/websocket.gateway';
 import { CreateTableDto, UpdateTableDto } from './dto/table.dto';
-import { Role, TableStatus } from '../common/enums';
+import { OrderStatus, Role, TableStatus } from '../common/enums';
 
 const tableInclude = {
   currentWaiter: {
     select: { id: true, name: true, email: true, role: true },
+  },
+  orders: {
+    where: { status: { not: 'CLOSED' } },
+    select: {
+      id: true,
+      status: true,
+      items: { select: { id: true, quantity: true } },
+    },
   },
 } as const;
 
@@ -139,6 +147,20 @@ export class TablesService {
 
     if (table.status === TableStatus.FREE || table.status === TableStatus.CLOSED) {
       throw new BadRequestException('Table has no open session');
+    }
+
+    const consumedOrders = await this.prisma.order.count({
+      where: {
+        tableId: id,
+        status: OrderStatus.DELIVERED,
+        items: { some: {} },
+      },
+    });
+
+    if (consumedOrders === 0) {
+      throw new BadRequestException(
+        'Cannot request bill before the table has consumed at least one item',
+      );
     }
 
     const pendingOrders = await this.prisma.order.count({

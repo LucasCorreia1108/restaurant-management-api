@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   ParseUUIDPipe,
+  ForbiddenException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -17,7 +18,7 @@ import {
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
-import { Roles } from '../common/decorators';
+import { CurrentUser, Roles, type AuthUser } from '../common/decorators';
 import { Role } from '../common/enums';
 
 @ApiTags('Users')
@@ -27,9 +28,17 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  @Roles(Role.ADMIN)
-  @ApiOperation({ summary: 'Create a new user (Admin only)' })
-  create(@Body() dto: CreateUserDto) {
+  @Roles(Role.ADMIN, Role.MANAGER)
+  @ApiOperation({ summary: 'Create a new user (Admin or manager)' })
+  create(@Body() dto: CreateUserDto, @CurrentUser() user: AuthUser) {
+    if (
+      user.role === Role.MANAGER &&
+      (dto.role === Role.ADMIN || dto.role === Role.MANAGER)
+    ) {
+      throw new ForbiddenException(
+        'Managers cannot create administrator or manager accounts',
+      );
+    }
     return this.usersService.create(dto);
   }
 

@@ -3,6 +3,8 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { OrderStatus } from '../common/enums';
 
+const RESTAURANT_TIMEZONE_OFFSET = '-03:00';
+
 @Injectable()
 export class ReportsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -158,8 +160,20 @@ export class ReportsService {
   private buildDateFilter(from?: string, to?: string) {
     if (!from && !to) return undefined;
     return {
-      ...(from ? { gte: new Date(`${from}T00:00:00.000`) } : {}),
-      ...(to ? { lte: new Date(`${to}T23:59:59.999`) } : {}),
+      ...(from
+        ? {
+            gte: new Date(
+              `${from}T00:00:00.000${RESTAURANT_TIMEZONE_OFFSET}`,
+            ),
+          }
+        : {}),
+      ...(to
+        ? {
+            lte: new Date(
+              `${to}T23:59:59.999${RESTAURANT_TIMEZONE_OFFSET}`,
+            ),
+          }
+        : {}),
     };
   }
 }
