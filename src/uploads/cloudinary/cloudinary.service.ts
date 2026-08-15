@@ -1,4 +1,9 @@
-import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
+import {
+  BadGatewayException,
+  Injectable,
+  OnModuleInit,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
 import { Readable } from 'stream';
@@ -28,27 +33,50 @@ export class CloudinaryService implements OnModuleInit {
     file: Express.Multer.File,
     folder = 'restaurant/menu-items',
   ): Promise<CloudinaryUploadResult> {
-    const result = await new Promise<UploadApiResponse>((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream(
-        {
-          folder,
-          resource_type: 'image',
-          transformation: [
-            { width: 1200, height: 1200, crop: 'limit' },
-            { quality: 'auto', fetch_format: 'auto' },
-          ],
-        },
-        (error, uploaded) => {
-          if (error || !uploaded) {
-            reject(error ?? new Error('Cloudinary upload failed'));
-            return;
-          }
-          resolve(uploaded);
-        },
-      );
+    let result: UploadApiResponse;
+    try {
+      result = await new Promise<UploadApiResponse>((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          {
+            folder,
+            resource_type: 'image',
+            transformation: [{ width: 1200, height: 1200, crop: 'limit' }],
+          },
+          (error, uploaded) => {
+            if (error || !uploaded) {
+              const statusCode =
+                error && typeof error === 'object' && 'http_code' in error
+                  ? Number(error.http_code)
+                  : undefined;
+              if (statusCode === 403) {
+                reject(
+                  new Error(
+                    'Cloudinary recusou o upload.',
+                  ),
+                );
+                return;
+              }
+              const message =
+                error && typeof error === 'object' && 'message' in error
+                  ? String(error.message)
+                  : 'Cloudinary upload failed';
+              reject(new Error(message));
+              return;
+            }
+            resolve(uploaded);
+          },
+        );
 
-      Readable.from(file.buffer).pipe(stream);
-    });
+        Readable.from(file.buffer).pipe(stream);
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Cloudinary upload failed';
+      this.logger.error(`Image upload failed: ${message}`);
+      throw new BadGatewayException(
+        `Não foi possível enviar a imagem: ${message}`,
+      );
+    }
 
     return {
       url: result.secure_url,
